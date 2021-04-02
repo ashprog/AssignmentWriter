@@ -1,22 +1,21 @@
 package in.ashprog.assignmentwriter;
 
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.Toast;
-
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,6 +33,8 @@ public class PdfConverterActivity extends AppCompatActivity {
     ArrayList<File> imagesList;
     ImagesListAdapter imagesListAdapter;
     ArrayList<File> checkedImages;
+
+    private InterstitialAd mInterstitialAd;
 
     boolean permissionDialogShown = false;
 
@@ -102,6 +103,18 @@ public class PdfConverterActivity extends AppCompatActivity {
                 else imagesListAdapter.unSelectAll();
             }
         });
+
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-4317741765568310/2812740643");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                // Load the next interstitial.
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+            }
+
+        });
     }
 
     @Override
@@ -140,7 +153,7 @@ public class PdfConverterActivity extends AppCompatActivity {
                 }
 
                 if (checkedImages.size() > 0)
-                    new CreatePdfFileTask(this, checkedImages).execute();
+                    new CreatePdfFileTask(this, checkedImages, mInterstitialAd).execute();
                 else
                     Toast.makeText(this, "Nothing selected.", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {

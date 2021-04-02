@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.InterstitialAd;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
@@ -24,9 +25,12 @@ class CreatePdfFileTask extends AsyncTask<String, Integer, File> {
     ArrayList<File> imagesList;
     ProgressDialog progressDialog;
 
-    public CreatePdfFileTask(Context context, ArrayList<File> imagesList) {
+    private InterstitialAd mInterstitialAd;
+
+    public CreatePdfFileTask(Context context, ArrayList<File> imagesList, InterstitialAd mInterstitialAd) {
         this.context = context;
         this.imagesList = imagesList;
+        this.mInterstitialAd = mInterstitialAd;
     }
 
     @Override
@@ -95,9 +99,12 @@ class CreatePdfFileTask extends AsyncTask<String, Integer, File> {
         super.onPostExecute(file);
 
         progressDialog.dismiss();
-        if (file != null)
+        if (file != null) {
             Toast.makeText(context, "Pdf file saved at " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-        else
+            if (mInterstitialAd.isLoaded()) {
+                mInterstitialAd.show();
+            }
+        } else
             Toast.makeText(context, "Some error occurred.", Toast.LENGTH_SHORT).show();
     }
 

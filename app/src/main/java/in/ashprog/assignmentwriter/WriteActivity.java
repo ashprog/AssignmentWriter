@@ -1,9 +1,5 @@
 package in.ashprog.assignmentwriter;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -24,6 +20,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -42,6 +45,8 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     EditText editText;
     TextView previewTV;
     RelativeLayout previewLayout;
+
+    private InterstitialAd mInterstitialAd;
 
     boolean permissionDialogShown = false;
 
@@ -116,6 +121,18 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         editText.setHint("Use <Q> </Q> tag for adding question text.\nFor eg. <Q> Your text </Q>");
         previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>")),
                 TextView.BufferType.SPANNABLE);
+
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-4317741765568310/2812740643");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                // Load the next interstitial.
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+            }
+
+        });
     }
 
     @Override
@@ -145,7 +162,6 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
     public void downloadPage(View view) {
         if (hasPermission(this)) {
-            Snackbar.make(view, "Preparing...", BaseTransientBottomBar.LENGTH_SHORT).show();
             try {
                 createFolder();
 
@@ -158,10 +174,13 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
                 try {
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(pageFile));
                     previewLayout.setDrawingCacheEnabled(false);
-                    Snackbar.make(view, "Page saved at " + pageFile.getPath(), BaseTransientBottomBar.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Page saved at " + pageFile.getPath(), Toast.LENGTH_SHORT).show();
+                    if (mInterstitialAd.isLoaded()) {
+                        mInterstitialAd.show();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Snackbar.make(view, e.getMessage(), BaseTransientBottomBar.LENGTH_SHORT).show();
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -173,14 +192,23 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     }
 
     public void openSettings(View view) {
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        }
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
     public void openGetHandwriting(View view) {
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        }
         startActivity(new Intent(this, GetHandwritingActivity.class));
     }
 
     public void openPdfConverter(View view) {
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        }
         startActivity(new Intent(this, PdfConverterActivity.class));
     }
 

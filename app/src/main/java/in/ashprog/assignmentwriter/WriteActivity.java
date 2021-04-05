@@ -5,7 +5,9 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
@@ -21,12 +23,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.google.android.ads.nativetemplates.NativeTemplateStyle;
+import com.google.android.ads.nativetemplates.TemplateView;
 import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -47,6 +56,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     RelativeLayout previewLayout;
 
     private InterstitialAd mInterstitialAd;
+    private TemplateView template;
 
     boolean permissionDialogShown = false;
 
@@ -54,6 +64,8 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         editText = findViewById(R.id.editText);
         previewTV = findViewById(R.id.previewTV);
         previewLayout = findViewById(R.id.previewLayout);
+
+        template = findViewById(R.id.native_ad);
     }
 
     void initializeFormat() throws Exception {
@@ -106,6 +118,86 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         }
     }
 
+    void initializeAds() {
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-4317741765568310/2812740643");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                // Load the next interstitial.
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+            }
+
+        });
+
+        AdLoader adLoader = new AdLoader.Builder(this, "ca-app-pub-4317741765568310/5026365668")
+                .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    @Override
+                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
+                        if (WriteActivity.this.isDestroyed()) {
+                            unifiedNativeAd.destroy();
+                            return;
+                        }
+
+                        NativeTemplateStyle styles = new NativeTemplateStyle.Builder()
+                                .withPrimaryTextTypeface(Typeface.SANS_SERIF)
+                                .withPrimaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
+                                .withSecondaryTextTypeface(Typeface.SANS_SERIF)
+                                .withSecondaryTextTypefaceColor(Color.parseColor("#02090D"))
+                                .withCallToActionTextTypeface(Typeface.SANS_SERIF)
+                                .withTertiaryTextTypeface(Typeface.SANS_SERIF)
+                                .withTertiaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
+                                .withCallToActionBackgroundColor(new ColorDrawable(Color.parseColor("#1ebbaf")))
+                                .build();
+
+
+                        template.setStyles(styles);
+                        template.setNativeAd(unifiedNativeAd);
+                        template.setVisibility(View.VISIBLE);
+                    }
+                })
+                /*
+                .forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
+                    @Override
+                    public void onNativeAdLoaded(NativeAd NativeAd) {
+                        if (WriteActivity.this.isDestroyed()) {
+                            NativeAd.destroy();
+                            return;
+                        }
+
+                        NativeTemplateStyle styles = new NativeTemplateStyle.Builder()
+                                .withPrimaryTextTypeface(Typeface.SANS_SERIF)
+                                .withPrimaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
+                                .withSecondaryTextTypeface(Typeface.SANS_SERIF)
+                                .withSecondaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
+                                .withCallToActionTextTypeface(Typeface.SANS_SERIF)
+                                .withTertiaryTextTypeface(Typeface.SANS_SERIF)
+                                .withTertiaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
+                                .withCallToActionBackgroundColor(new ColorDrawable(Color.parseColor("#1ebbaf")))
+                                .build();
+
+                        template.setStyles(styles);
+                        template.setNativeAd(NativeAd);
+                        template.setVisibility(View.VISIBLE);
+                    }
+                })
+                 */
+                .withAdListener(new AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(LoadAdError adError) {
+                        // Handle the failure by logging, altering the UI, and so on.
+                    }
+                })
+                .withNativeAdOptions(new NativeAdOptions.Builder()
+                        // Methods in the NativeAdOptions.Builder class can be
+                        // used here to specify individual options settings.
+                        .build())
+                .build();
+        adLoader.loadAd(new AdRequest.Builder().build());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,17 +214,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>")),
                 TextView.BufferType.SPANNABLE);
 
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-4317741765568310/2812740643");
-        mInterstitialAd.loadAd(new AdRequest.Builder().build());
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                // Load the next interstitial.
-                mInterstitialAd.loadAd(new AdRequest.Builder().build());
-            }
-
-        });
+        initializeAds();
     }
 
     @Override
@@ -149,6 +231,13 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         } else if (!permissionDialogShown) {
             getPermission(this);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        template.destroyNativeAd();
+
+        super.onDestroy();
     }
 
     @Override

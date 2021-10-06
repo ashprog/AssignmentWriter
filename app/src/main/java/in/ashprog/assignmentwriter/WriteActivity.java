@@ -17,7 +17,6 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -234,15 +233,6 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     }
 
     @Override
-    protected void onDestroy() {
-        if(template!=null) {
-            template.destroyNativeAd();
-        }
-
-        super.onDestroy();
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -318,7 +308,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density - 16f;
 
         if (dpWidth < 330) {
-            previewLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) (1.41 * displayMetrics.widthPixels)));
+            previewLayout.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, (int) (1.41 * displayMetrics.widthPixels)));
         }
     }
 

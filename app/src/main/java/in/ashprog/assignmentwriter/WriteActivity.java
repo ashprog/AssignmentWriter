@@ -235,7 +235,9 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
     @Override
     protected void onDestroy() {
-        template.destroyNativeAd();
+        if(template!=null) {
+            template.destroyNativeAd();
+        }
 
         super.onDestroy();
     }

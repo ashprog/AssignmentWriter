@@ -18,7 +18,16 @@ Assignment Writer is an Android application designed to convert digital text int
 
 ## Screenshots
 
-*(Add screenshots here)*
+<p align="center">
+  <img src="https://drive.google.com/uc?export=view&id=12pCsoh2xB6hQtRpU2M6ow7NUpvDCfC8l" width="200" />
+  <img src="https://drive.google.com/uc?export=view&id=1A8otDByZHLyQbLSUjOI3DmGU06FW0Jy9" width="200" />
+  <img src="https://drive.google.com/uc?export=view&id=19YyFbkYwINaROQ5FHDzSV6cvh4YZITU3" width="200" />
+</p>
+<p align="center">
+  <img src="https://drive.google.com/uc?export=view&id=1C8RWO9Wty4ZnpNqc1-epJw6whdpfIVg9" width="200" />
+  <img src="https://drive.google.com/uc?export=view&id=1lLGq13MUnKUA8nBjAIEEw9qWi3eEsXUw" width="200" />
+  <img src="https://drive.google.com/uc?export=view&id=1sVh_j5j3aw6jQBssMU6XlS0Bc-WGvaG4" width="200" />
+</p>
 
 ## How to Use
 
@@ -40,6 +49,10 @@ Assignment Writer is an Android application designed to convert digital text int
 
 This app does not collect any personal information or use the Google Advertising ID. All processing happens locally on your device.
 
+## Contact
+
+If you have any questions or suggestions, feel free to reach out at: **umangkes1234@gmail.com**
+
 ## License
 
-*(Specify your license here, e.g., MIT, Apache 2.0)*
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

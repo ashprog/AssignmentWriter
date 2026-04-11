@@ -13,7 +13,7 @@
     <string name="open_calligraphr_tutorial">Open Calligraphr Tutorial</string>
     <string name="step_5">5) After obtaining your font (otf) file. Move it to the app\'s internal storage: Android/data/in.ashprog.assignmentwriter/files/Writer/Font folder with name as \'myWriting.otf\'.</string>
     <string name="step_6">6) That\'s it. You\'re good to go.</string>
-    <string name="tip_calligraphr">Tip: While creating your font at Calligraphr, set Letter Spacing to 10% for adding realistic look.</string>
+    <string name="tip_calligraphr">Tip: While creating your font at Calligraphr, set Letter Spacing to 10%% for adding realistic look.</string>
     <string name="font_setting">Font Setting:</string>
     <string name="fill_template_like_this">Fill template like this:</string>
     <string name="enter_text">Enter text</string>
@@ -64,4 +64,8 @@
     <string name="clear_all">Clear All</string>
     <string name="credits">Credits</string>
     <string name="back">Back</string>
+
+    <!-- <string name="tip_calligraphr">Tip: While creating your font at Calligraphr, set Letter Spacing
+        to 10%% for adding realistic look.
+    </string> -->
 </resources>

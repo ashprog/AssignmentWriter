@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 import android.content.SharedPreferences;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -17,13 +19,13 @@ import com.google.android.material.snackbar.Snackbar;
 
 import static in.ashprog.assignmentwriter.App.sharedPreferences;
 import static in.ashprog.assignmentwriter.AppPermission.createFolder;
-import static in.ashprog.assignmentwriter.AppPermission.getPermission;
-import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    private static final String TAG = "SettingsActivity";
+
     RadioGroup colorRG, pageRG, fontRG;
-    TextView demoTV, versionTV;
+    TextView demoTV, versionTV, textView4, textView10;
     EditText fontSizeET, lineSpaceET;
 
     boolean permissionDialogShown = false;
@@ -36,39 +38,38 @@ public class SettingsActivity extends AppCompatActivity {
         lineSpaceET = findViewById(R.id.lineSpaceET);
         versionTV = findViewById(R.id.versionTV);
         demoTV = findViewById(R.id.demoTV);
+        textView4 = findViewById(R.id.textView4);
+        textView10 = findViewById(R.id.textView10);
+
+        textView4.setPaintFlags(textView4.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        textView10.setPaintFlags(textView10.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
     void fetchFormat() {
         fontSizeET.setText(String.valueOf(sharedPreferences.getFloat("fontSize", 24f)));
         lineSpaceET.setText(String.valueOf(sharedPreferences.getFloat("lineSpace", -12f)));
 
-        switch (sharedPreferences.getInt("color", 0)) {
-            case 0:
-                colorRG.check(R.id.blueRB);
-                break;
-            case 1:
-                colorRG.check(R.id.blackRB);
-                break;
+        int color = sharedPreferences.getInt("color", 0);
+        if (color == 0) {
+            colorRG.check(R.id.blueRB);
+        } else if (color == 1) {
+            colorRG.check(R.id.blackRB);
         }
 
-        switch (sharedPreferences.getInt("page", 0)) {
-            case 0:
-                pageRG.check(R.id.plainPageRB);
-                break;
-            case 1:
-                pageRG.check(R.id.linedPageRB);
-                break;
+        int page = sharedPreferences.getInt("page", 0);
+        if (page == 0) {
+            pageRG.check(R.id.plainPageRB);
+        } else if (page == 1) {
+            pageRG.check(R.id.linedPageRB);
         }
 
-        switch (sharedPreferences.getInt("font", 0)) {
-            case 0:
-                fontRG.check(R.id.ashprogRB);
-                demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.ashprog));
-                break;
-            case 1:
-                fontRG.check(R.id.vinayRB);
-                demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.vinay));
-                break;
+        int font = sharedPreferences.getInt("font", 0);
+        if (font == 0) {
+            fontRG.check(R.id.ashprogRB);
+            demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.ashprog));
+        } else if (font == 1) {
+            fontRG.check(R.id.vinayRB);
+            demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.vinay));
         }
     }
 
@@ -92,14 +93,12 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (hasPermission(this)) {
-            try {
-                createFolder();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        } else if (!permissionDialogShown) getPermission(this);
+        try {
+            createFolder(this);
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating folder", e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -115,14 +114,10 @@ public class SettingsActivity extends AppCompatActivity {
         pageRG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.plainPageRB:
-                        lineSpaceET.setText(String.valueOf(-12));
-                        break;
-
-                    case R.id.linedPageRB:
-                        lineSpaceET.setText(String.valueOf(-15));
-                        break;
+                if (checkedId == R.id.plainPageRB) {
+                    lineSpaceET.setText(String.valueOf(-12));
+                } else if (checkedId == R.id.linedPageRB) {
+                    lineSpaceET.setText(String.valueOf(-15));
                 }
             }
         });
@@ -132,23 +127,19 @@ public class SettingsActivity extends AppCompatActivity {
         fontRG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.ashprogRB:
-                        fontSizeET.setText(String.valueOf(24));
-                        demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.ashprog));
-                        break;
-
-                    case R.id.vinayRB:
-                        fontSizeET.setText(String.valueOf(18));
-                        demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.vinay));
-                        break;
+                if (checkedId == R.id.ashprogRB) {
+                    fontSizeET.setText(String.valueOf(24));
+                    demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.ashprog));
+                } else if (checkedId == R.id.vinayRB) {
+                    fontSizeET.setText(String.valueOf(18));
+                    demoTV.setTypeface(ResourcesCompat.getFont(SettingsActivity.this, R.font.vinay));
                 }
             }
         });
     }
 
     void showVersion() {
-        versionTV.setText(String.format("Version : %d.0", BuildConfig.VERSION_CODE));
+        versionTV.setText(getString(R.string.version_format, BuildConfig.VERSION_CODE));
     }
 
     public void save(View view) {
@@ -160,36 +151,30 @@ public class SettingsActivity extends AppCompatActivity {
         if (lineSpaceET.getText().length() > 0)
             editor.putFloat("lineSpace", Float.parseFloat(lineSpaceET.getText().toString()));
 
-        switch (colorRG.getCheckedRadioButtonId()) {
-            case R.id.blueRB:
-                editor.putInt("color", 0);
-                break;
-            case R.id.blackRB:
-                editor.putInt("color", 1);
-                break;
+        int colorCheckedId = colorRG.getCheckedRadioButtonId();
+        if (colorCheckedId == R.id.blueRB) {
+            editor.putInt("color", 0);
+        } else if (colorCheckedId == R.id.blackRB) {
+            editor.putInt("color", 1);
         }
 
-        switch (pageRG.getCheckedRadioButtonId()) {
-            case R.id.plainPageRB:
-                editor.putInt("page", 0);
-                break;
-            case R.id.linedPageRB:
-                editor.putInt("page", 1);
-                break;
+        int pageCheckedId = pageRG.getCheckedRadioButtonId();
+        if (pageCheckedId == R.id.plainPageRB) {
+            editor.putInt("page", 0);
+        } else if (pageCheckedId == R.id.linedPageRB) {
+            editor.putInt("page", 1);
         }
 
-        switch (fontRG.getCheckedRadioButtonId()) {
-            case R.id.ashprogRB:
-                editor.putInt("font", 0);
-                break;
-            case R.id.vinayRB:
-                editor.putInt("font", 1);
-                break;
+        int fontCheckedId = fontRG.getCheckedRadioButtonId();
+        if (fontCheckedId == R.id.ashprogRB) {
+            editor.putInt("font", 0);
+        } else if (fontCheckedId == R.id.vinayRB) {
+            editor.putInt("font", 1);
         }
 
-        editor.commit();
+        editor.apply();
 
-        Snackbar.make(view, "Format Saved !", BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(view, R.string.format_saved, BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     public void back(View view) {

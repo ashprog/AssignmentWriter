@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
+    android:fitsSystemWindows="true"
     tools:context=".PdfConverterActivity">
 
     <TextView
@@ -12,13 +13,11 @@
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:fontFamily="@font/anonymous_pro"
         android:gravity="center_vertical"
-        android:text="Pdf Converter"
+        android:text="@string/pdf_converter"
         android:textColor="#FFFFFF"
         android:textSize="30sp"
         android:textStyle="bold"
@@ -31,8 +30,8 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/back"
         android:onClick="back"
         android:scaleType="centerInside"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,9 +43,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
-        android:text="For creating a pdf file, select the images from below list and click on 'Create Pdf'."
+        android:text="@string/pdf_converter_desc"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -57,9 +55,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="2dp"
-        android:text="Make sure the images are in Writer/Images folder."
+        android:text="@string/images_folder_desc"
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView15" />
@@ -69,10 +66,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@+id/createButton"
         app:layout_constraintEnd_toEndOf="parent"
@@ -80,17 +75,29 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout12" />
 
     <Button
+        android:id="@+id/pickImagesButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/button_bg"
+        android:text="@string/pick_images"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/createButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
         android:id="@+id/createButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/button_bg"
-        android:onClick="createPdf"
-        android:text="CREATE PDF"
+        android:text="@string/create_pdf"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -102,10 +109,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:background="@drawable/button_bg_2"
         android:orientation="horizontal"
         android:padding="5dp"
@@ -117,7 +122,30 @@
             android:id="@+id/selectAllCB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select All"
+            android:text="@string/select_all"
             android:textSize="16sp" />
     </LinearLayout>
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/createButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout12" />
+
+    <TextView
+        android:id="@+id/progressText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/progressBar"
+        app:layout_constraintStart_toStartOf="@+id/progressBar"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

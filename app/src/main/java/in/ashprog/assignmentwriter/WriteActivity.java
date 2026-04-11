@@ -1,19 +1,19 @@
 package in.ashprog.assignmentwriter;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -21,67 +21,63 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.google.android.ads.nativetemplates.NativeTemplateStyle;
-import com.google.android.ads.nativetemplates.TemplateView;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
-import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static in.ashprog.assignmentwriter.App.sharedPreferences;
 import static in.ashprog.assignmentwriter.AppPermission.createFolder;
-import static in.ashprog.assignmentwriter.AppPermission.getPermission;
-import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 
 public class WriteActivity extends AppCompatActivity implements TextWatcher, View.OnTouchListener {
 
+    private static final String TAG = "WriteActivity";
     EditText editText;
     TextView previewTV;
     RelativeLayout previewLayout;
 
-    private InterstitialAd mInterstitialAd;
-    private TemplateView template;
-
     boolean permissionDialogShown = false;
+
+    private final ActivityResultLauncher<String> createDocumentLauncher = registerForActivityResult(
+            new ActivityResultContracts.CreateDocument("image/png"),
+            uri -> {
+                if (uri != null) {
+                    saveBitmapToUri(uri);
+                }
+            }
+    );
 
     void initialize() {
         editText = findViewById(R.id.editText);
         previewTV = findViewById(R.id.previewTV);
         previewLayout = findViewById(R.id.previewLayout);
-
-        template = findViewById(R.id.native_ad);
     }
 
     void initializeFormat() throws Exception {
-        createFolder();
+        createFolder(this);
+
+        File baseDir = getExternalFilesDir(null);
+        if (baseDir == null) throw new Exception("External storage not available");
 
         //Setting Font
-        File fontFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Font/myWriting.otf");
+        File fontFile = new File(baseDir, "Writer/Font/myWriting.otf");
         if (fontFile.exists())
             previewTV.setTypeface(Typeface.createFromFile(fontFile));
         else {
-            switch (sharedPreferences.getInt("font", 0)) {
-                case 0:
-                    previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.ashprog));
-                    break;
-                case 1:
-                    previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.vinay));
-                    break;
+            int font = sharedPreferences.getInt("font", 0);
+            if (font == 0) {
+                previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.ashprog));
+            } else if (font == 1) {
+                previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.vinay));
             }
         }
 
@@ -92,111 +88,28 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         previewTV.setLineSpacing(sharedPreferences.getFloat("lineSpace", -12), 1.0f);
 
         //Setting Font Color
-        switch (sharedPreferences.getInt("color", 0)) {
-            case 0:
-                previewTV.setTextColor(Color.parseColor("#414A82"));
-                break;
-            case 1:
-                previewTV.setTextColor(Color.parseColor("#000000"));
-                break;
+        int color = sharedPreferences.getInt("color", 0);
+        if (color == 0) {
+            previewTV.setTextColor(Color.parseColor("#414A82"));
+        } else if (color == 1) {
+            previewTV.setTextColor(Color.parseColor("#000000"));
         }
 
         //Setting Page Background
-        File pageFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Background/page_bg.png");
+        File pageFile = new File(baseDir, "Writer/Background/page_bg.png");
         if (pageFile.exists()) {
             previewLayout.setBackground(Drawable.createFromPath(pageFile.getPath()));
         } else {
-            switch (sharedPreferences.getInt("page", 0)) {
-                case 0:
-                    previewLayout.setBackgroundResource(R.drawable.page_bg_1);
-                    break;
-                case 1:
-                    previewLayout.setBackgroundResource(R.drawable.page_bg_2);
-                    break;
+            int page = sharedPreferences.getInt("page", 0);
+            if (page == 0) {
+                previewLayout.setBackgroundResource(R.drawable.page_bg_1);
+            } else if (page == 1) {
+                previewLayout.setBackgroundResource(R.drawable.page_bg_2);
             }
         }
     }
 
-    void initializeAds() {
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-4317741765568310/2812740643");
-        mInterstitialAd.loadAd(new AdRequest.Builder().build());
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                // Load the next interstitial.
-                mInterstitialAd.loadAd(new AdRequest.Builder().build());
-            }
-
-        });
-
-        AdLoader adLoader = new AdLoader.Builder(this, "ca-app-pub-4317741765568310/5026365668")
-                .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-                    @Override
-                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                        if (WriteActivity.this.isDestroyed()) {
-                            unifiedNativeAd.destroy();
-                            return;
-                        }
-
-                        NativeTemplateStyle styles = new NativeTemplateStyle.Builder()
-                                .withPrimaryTextTypeface(Typeface.SANS_SERIF)
-                                .withPrimaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withSecondaryTextTypeface(Typeface.SANS_SERIF)
-                                .withSecondaryTextTypefaceColor(Color.parseColor("#02090D"))
-                                .withCallToActionTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withCallToActionBackgroundColor(new ColorDrawable(Color.parseColor("#1ebbaf")))
-                                .build();
-
-
-                        template.setStyles(styles);
-                        template.setNativeAd(unifiedNativeAd);
-                        template.setVisibility(View.VISIBLE);
-                    }
-                })
-                /*
-                .forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
-                    @Override
-                    public void onNativeAdLoaded(NativeAd NativeAd) {
-                        if (WriteActivity.this.isDestroyed()) {
-                            NativeAd.destroy();
-                            return;
-                        }
-
-                        NativeTemplateStyle styles = new NativeTemplateStyle.Builder()
-                                .withPrimaryTextTypeface(Typeface.SANS_SERIF)
-                                .withPrimaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withSecondaryTextTypeface(Typeface.SANS_SERIF)
-                                .withSecondaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withCallToActionTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withCallToActionBackgroundColor(new ColorDrawable(Color.parseColor("#1ebbaf")))
-                                .build();
-
-                        template.setStyles(styles);
-                        template.setNativeAd(NativeAd);
-                        template.setVisibility(View.VISIBLE);
-                    }
-                })
-                 */
-                .withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(LoadAdError adError) {
-                        // Handle the failure by logging, altering the UI, and so on.
-                    }
-                })
-                .withNativeAdOptions(new NativeAdOptions.Builder()
-                        // Methods in the NativeAdOptions.Builder class can be
-                        // used here to specify individual options settings.
-                        .build())
-                .build();
-        adLoader.loadAd(new AdRequest.Builder().build());
-    }
-
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -209,26 +122,25 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
         setPreviewLayout();
 
-        editText.setHint("Use <Q> </Q> tag for adding question text.\nFor eg. <Q> Your text </Q>");
-        previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>")),
-                TextView.BufferType.SPANNABLE);
-
-        initializeAds();
+        editText.setHint(R.string.enter_text);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>"), Html.FROM_HTML_MODE_COMPACT),
+                    TextView.BufferType.SPANNABLE);
+        } else {
+            previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>")),
+                    TextView.BufferType.SPANNABLE);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (hasPermission(this)) {
-            try {
-                initializeFormat();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        } else if (!permissionDialogShown) {
-            getPermission(this);
+        try {
+            initializeFormat();
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing format", e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -242,54 +154,42 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     }
 
     public void downloadPage(View view) {
-        if (hasPermission(this)) {
-            try {
-                createFolder();
+        if (previewLayout.getWidth() <= 0 || previewLayout.getHeight() <= 0) {
+            Toast.makeText(this, R.string.preview_not_ready, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                File pageFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Images/image (" + getCount() + ") .png");
+        String fileName = "page" + getCount() + ".png";
+        createDocumentLauncher.launch(fileName);
+    }
 
-                previewLayout.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-                previewLayout.setDrawingCacheEnabled(true);
-                previewLayout.buildDrawingCache();
-                Bitmap bitmap = previewLayout.getDrawingCache();
-                try {
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(pageFile));
-                    previewLayout.setDrawingCacheEnabled(false);
-                    Toast.makeText(this, "Page saved at " + pageFile.getPath(), Toast.LENGTH_SHORT).show();
-                    if (mInterstitialAd.isLoaded()) {
-                        mInterstitialAd.show();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+    private void saveBitmapToUri(Uri uri) {
+        try {
+            Bitmap bitmap = Bitmap.createBitmap(previewLayout.getWidth(), previewLayout.getHeight(), Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+            previewLayout.draw(canvas);
+
+            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                if (out != null) {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    Toast.makeText(this, R.string.page_saved, Toast.LENGTH_SHORT).show();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-        } else {
-            getPermission(this);
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving page to Uri", e);
+            Toast.makeText(this, getString(R.string.error_saving, e.getMessage()), Toast.LENGTH_SHORT).show();
         }
     }
 
     public void openSettings(View view) {
-        if (mInterstitialAd.isLoaded()) {
-            mInterstitialAd.show();
-        }
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
     public void openGetHandwriting(View view) {
-        if (mInterstitialAd.isLoaded()) {
-            mInterstitialAd.show();
-        }
         startActivity(new Intent(this, GetHandwritingActivity.class));
     }
 
     public void openPdfConverter(View view) {
-        if (mInterstitialAd.isLoaded()) {
-            mInterstitialAd.show();
-        }
         startActivity(new Intent(this, PdfConverterActivity.class));
     }
 
@@ -300,7 +200,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
     public void clearAll(View view) {
         editText.setText("");
-        Snackbar.make(view, "Input cleared.", BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(view, R.string.input_cleared, BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     void setPreviewLayout() {
@@ -323,7 +223,11 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
         text = formatText(text);
 
-        previewTV.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            previewTV.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT), TextView.BufferType.SPANNABLE);
+        } else {
+            previewTV.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+        }
     }
 
     @Override
@@ -335,10 +239,9 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     public boolean onTouch(View v, MotionEvent event) {
         if (v.getId() == R.id.editText) {
             v.getParent().requestDisallowInterceptTouchEvent(true);
-            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_UP:
-                    v.getParent().requestDisallowInterceptTouchEvent(false);
-                    break;
+            if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+                v.getParent().requestDisallowInterceptTouchEvent(false);
+                v.performClick();
             }
         }
         return false;
@@ -348,7 +251,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         int count = sharedPreferences.getInt("imagesCount", 1);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("imagesCount", count + 1);
-        editor.commit();
+        editor.apply();
 
         return count;
     }

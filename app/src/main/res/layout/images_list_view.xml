@@ -17,8 +17,8 @@
         android:id="@+id/pageIV"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:scaleType="fitCenter"
         app:srcCompat="@drawable/writer_logo" />
 

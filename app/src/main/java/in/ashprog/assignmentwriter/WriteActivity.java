@@ -5,9 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
@@ -22,19 +20,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.google.android.ads.nativetemplates.NativeTemplateStyle;
-import com.google.android.ads.nativetemplates.TemplateView;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
-import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -54,34 +42,30 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     TextView previewTV;
     RelativeLayout previewLayout;
 
-    private InterstitialAd mInterstitialAd;
-    private TemplateView template;
-
     boolean permissionDialogShown = false;
 
     void initialize() {
         editText = findViewById(R.id.editText);
         previewTV = findViewById(R.id.previewTV);
         previewLayout = findViewById(R.id.previewLayout);
-
-        template = findViewById(R.id.native_ad);
     }
 
     void initializeFormat() throws Exception {
-        createFolder();
+        createFolder(this);
+
+        File baseDir = getExternalFilesDir(null);
+        if (baseDir == null) throw new Exception("External storage not available");
 
         //Setting Font
-        File fontFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Font/myWriting.otf");
+        File fontFile = new File(baseDir, "Writer/Font/myWriting.otf");
         if (fontFile.exists())
             previewTV.setTypeface(Typeface.createFromFile(fontFile));
         else {
-            switch (sharedPreferences.getInt("font", 0)) {
-                case 0:
-                    previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.ashprog));
-                    break;
-                case 1:
-                    previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.vinay));
-                    break;
+            int font = sharedPreferences.getInt("font", 0);
+            if (font == 0) {
+                previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.ashprog));
+            } else if (font == 1) {
+                previewTV.setTypeface(ResourcesCompat.getFont(this, R.font.vinay));
             }
         }
 
@@ -92,109 +76,25 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         previewTV.setLineSpacing(sharedPreferences.getFloat("lineSpace", -12), 1.0f);
 
         //Setting Font Color
-        switch (sharedPreferences.getInt("color", 0)) {
-            case 0:
-                previewTV.setTextColor(Color.parseColor("#414A82"));
-                break;
-            case 1:
-                previewTV.setTextColor(Color.parseColor("#000000"));
-                break;
+        int color = sharedPreferences.getInt("color", 0);
+        if (color == 0) {
+            previewTV.setTextColor(Color.parseColor("#414A82"));
+        } else if (color == 1) {
+            previewTV.setTextColor(Color.parseColor("#000000"));
         }
 
         //Setting Page Background
-        File pageFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Background/page_bg.png");
+        File pageFile = new File(baseDir, "Writer/Background/page_bg.png");
         if (pageFile.exists()) {
             previewLayout.setBackground(Drawable.createFromPath(pageFile.getPath()));
         } else {
-            switch (sharedPreferences.getInt("page", 0)) {
-                case 0:
-                    previewLayout.setBackgroundResource(R.drawable.page_bg_1);
-                    break;
-                case 1:
-                    previewLayout.setBackgroundResource(R.drawable.page_bg_2);
-                    break;
+            int page = sharedPreferences.getInt("page", 0);
+            if (page == 0) {
+                previewLayout.setBackgroundResource(R.drawable.page_bg_1);
+            } else if (page == 1) {
+                previewLayout.setBackgroundResource(R.drawable.page_bg_2);
             }
         }
-    }
-
-    void initializeAds() {
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-4317741765568310/2812740643");
-        mInterstitialAd.loadAd(new AdRequest.Builder().build());
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                // Load the next interstitial.
-                mInterstitialAd.loadAd(new AdRequest.Builder().build());
-            }
-
-        });
-
-        AdLoader adLoader = new AdLoader.Builder(this, "ca-app-pub-4317741765568310/5026365668")
-                .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-                    @Override
-                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                        if (WriteActivity.this.isDestroyed()) {
-                            unifiedNativeAd.destroy();
-                            return;
-                        }
-
-                        NativeTemplateStyle styles = new NativeTemplateStyle.Builder()
-                                .withPrimaryTextTypeface(Typeface.SANS_SERIF)
-                                .withPrimaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withSecondaryTextTypeface(Typeface.SANS_SERIF)
-                                .withSecondaryTextTypefaceColor(Color.parseColor("#02090D"))
-                                .withCallToActionTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withCallToActionBackgroundColor(new ColorDrawable(Color.parseColor("#1ebbaf")))
-                                .build();
-
-
-                        template.setStyles(styles);
-                        template.setNativeAd(unifiedNativeAd);
-                        template.setVisibility(View.VISIBLE);
-                    }
-                })
-                /*
-                .forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
-                    @Override
-                    public void onNativeAdLoaded(NativeAd NativeAd) {
-                        if (WriteActivity.this.isDestroyed()) {
-                            NativeAd.destroy();
-                            return;
-                        }
-
-                        NativeTemplateStyle styles = new NativeTemplateStyle.Builder()
-                                .withPrimaryTextTypeface(Typeface.SANS_SERIF)
-                                .withPrimaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withSecondaryTextTypeface(Typeface.SANS_SERIF)
-                                .withSecondaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withCallToActionTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypeface(Typeface.SANS_SERIF)
-                                .withTertiaryTextTypefaceColor(Color.parseColor("#1ebbaf"))
-                                .withCallToActionBackgroundColor(new ColorDrawable(Color.parseColor("#1ebbaf")))
-                                .build();
-
-                        template.setStyles(styles);
-                        template.setNativeAd(NativeAd);
-                        template.setVisibility(View.VISIBLE);
-                    }
-                })
-                 */
-                .withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(LoadAdError adError) {
-                        // Handle the failure by logging, altering the UI, and so on.
-                    }
-                })
-                .withNativeAdOptions(new NativeAdOptions.Builder()
-                        // Methods in the NativeAdOptions.Builder class can be
-                        // used here to specify individual options settings.
-                        .build())
-                .build();
-        adLoader.loadAd(new AdRequest.Builder().build());
     }
 
     @Override
@@ -210,10 +110,8 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         setPreviewLayout();
 
         editText.setHint("Use <Q> </Q> tag for adding question text.\nFor eg. <Q> Your text </Q>");
-        previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>")),
+        previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>"), Html.FROM_HTML_MODE_COMPACT),
                 TextView.BufferType.SPANNABLE);
-
-        initializeAds();
     }
 
     @Override
@@ -244,24 +142,25 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     public void downloadPage(View view) {
         if (hasPermission(this)) {
             try {
-                createFolder();
+                createFolder(this);
 
-                File pageFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Images/image (" + getCount() + ") .png");
+                File baseDir = getExternalFilesDir(null);
+                if (baseDir == null) return;
+                if (previewLayout.getWidth() <= 0 || previewLayout.getHeight() <= 0) {
+                    Toast.makeText(this, "Preview not ready yet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-                previewLayout.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-                previewLayout.setDrawingCacheEnabled(true);
-                previewLayout.buildDrawingCache();
-                Bitmap bitmap = previewLayout.getDrawingCache();
-                try {
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(pageFile));
-                    previewLayout.setDrawingCacheEnabled(false);
+                Bitmap bitmap = Bitmap.createBitmap(previewLayout.getWidth(), previewLayout.getHeight(), Bitmap.Config.ARGB_8888);
+                android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+                previewLayout.draw(canvas);
+                File pageFile = new File(baseDir, "Writer/Images/page" + getCount() + ".png");
+                try (FileOutputStream out = new FileOutputStream(pageFile)) {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
                     Toast.makeText(this, "Page saved at " + pageFile.getPath(), Toast.LENGTH_SHORT).show();
-                    if (mInterstitialAd.isLoaded()) {
-                        mInterstitialAd.show();
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Error saving: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -273,23 +172,14 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     }
 
     public void openSettings(View view) {
-        if (mInterstitialAd.isLoaded()) {
-            mInterstitialAd.show();
-        }
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
     public void openGetHandwriting(View view) {
-        if (mInterstitialAd.isLoaded()) {
-            mInterstitialAd.show();
-        }
         startActivity(new Intent(this, GetHandwritingActivity.class));
     }
 
     public void openPdfConverter(View view) {
-        if (mInterstitialAd.isLoaded()) {
-            mInterstitialAd.show();
-        }
         startActivity(new Intent(this, PdfConverterActivity.class));
     }
 
@@ -323,7 +213,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
         text = formatText(text);
 
-        previewTV.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+        previewTV.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT), TextView.BufferType.SPANNABLE);
     }
 
     @Override
@@ -335,10 +225,8 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     public boolean onTouch(View v, MotionEvent event) {
         if (v.getId() == R.id.editText) {
             v.getParent().requestDisallowInterceptTouchEvent(true);
-            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_UP:
-                    v.getParent().requestDisallowInterceptTouchEvent(false);
-                    break;
+            if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+                v.getParent().requestDisallowInterceptTouchEvent(false);
             }
         }
         return false;

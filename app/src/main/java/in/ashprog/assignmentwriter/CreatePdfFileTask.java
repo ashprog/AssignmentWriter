@@ -1,13 +1,11 @@
 package in.ashprog.assignmentwriter;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.InterstitialAd;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
@@ -16,105 +14,90 @@ import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static in.ashprog.assignmentwriter.App.sharedPreferences;
 
-class CreatePdfFileTask extends AsyncTask<String, Integer, File> {
+class CreatePdfFileTask {
 
-    Context context;
-    ArrayList<File> imagesList;
-    ProgressDialog progressDialog;
+    private final Context context;
+    private final ArrayList<File> imagesList;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private InterstitialAd mInterstitialAd;
+    public interface Callback {
+        void onPreExecute();
+        void onProgressUpdate(int progress, int total);
+        void onPostExecute(File file);
+    }
 
-    public CreatePdfFileTask(Context context, ArrayList<File> imagesList, InterstitialAd mInterstitialAd) {
+    private final Callback callback;
+
+    public CreatePdfFileTask(Context context, ArrayList<File> imagesList, Callback callback) {
         this.context = context;
         this.imagesList = imagesList;
-        this.mInterstitialAd = mInterstitialAd;
+        this.callback = callback;
     }
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Please wait...");
-        progressDialog.setMessage("Creating pdf...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setIndeterminate(false);
-        progressDialog.setMax(100);
-        progressDialog.setCancelable(true);
-        progressDialog.show();
-    }
+    public void execute() {
+        if (callback != null) callback.onPreExecute();
 
-    @Override
-    protected File doInBackground(String... strings) {
-        File pdfFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Pdf/pdfFile (" + getCount() + ") .pdf");
-
-        Document document = new Document(PageSize.A4, 0f, 0f, 0f, 0f);
-        try {
-            PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
-            document.open();
-
-            for (int i = 0; i < imagesList.size(); i++) {
-                Image image = Image.getInstance(imagesList.get(i).getAbsolutePath());
-
-                float scaler = ((document.getPageSize().getWidth() - document.leftMargin()
-                        - document.rightMargin() - 0) / image.getWidth()) * 100; // 0 means you have no indentation. If you have any, change it.
-                image.scalePercent(scaler);
-                image.setAlignment(Image.ALIGN_CENTER | Image.ALIGN_TOP);
-                image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 1.0f,
-                        (document.getPageSize().getHeight() - image.getScaledHeight()) / 1.0f);
-
-                document.add(image);
-                document.newPage();
-                publishProgress(i);
+        executorService.execute(() -> {
+            File baseDir = context.getExternalFilesDir(null);
+            if (baseDir == null) {
+                mainHandler.post(() -> {
+                    if (callback != null) callback.onPostExecute(null);
+                });
+                return;
             }
 
-            document.close();
+            File pdfFile = new File(baseDir, "Writer/Pdf/pdfFile (" + getCount() + ") .pdf");
 
-            return pdfFile;
-        } catch (Exception e) {
-            e.printStackTrace();
+            Document document = new Document(PageSize.A4, 0f, 0f, 0f, 0f);
+            try {
+                PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+                document.open();
 
-            return null;
-        }
-    }
+                for (int i = 0; i < imagesList.size(); i++) {
+                    Image image = Image.getInstance(imagesList.get(i).getAbsolutePath());
 
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
+                    float scaler = ((document.getPageSize().getWidth() - document.leftMargin()
+                            - document.rightMargin()) / image.getWidth()) * 100;
+                    image.scalePercent(scaler);
+                    image.setAlignment(Image.ALIGN_CENTER | Image.ALIGN_TOP);
+                    image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 1.0f,
+                            (document.getPageSize().getHeight() - image.getScaledHeight()) / 1.0f);
 
-        this.progressDialog.setProgress(((values[0] + 1) * 100) / imagesList.size());
-        StringBuilder sb = new StringBuilder();
-        sb.append("Processing images (");
-        sb.append(values[0] + 1);
-        sb.append("/");
-        sb.append(imagesList.size());
-        sb.append(")");
-        progressDialog.setTitle(sb.toString());
-    }
+                    document.add(image);
+                    document.newPage();
 
-    @Override
-    protected void onPostExecute(File file) {
-        super.onPostExecute(file);
+                    int finalI = i;
+                    mainHandler.post(() -> {
+                        if (callback != null) callback.onProgressUpdate(finalI + 1, imagesList.size());
+                    });
+                }
 
-        progressDialog.dismiss();
-        if (file != null) {
-            Toast.makeText(context, "Pdf file saved at " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-            if (mInterstitialAd.isLoaded()) {
-                mInterstitialAd.show();
+                document.close();
+
+                mainHandler.post(() -> {
+                    if (callback != null) callback.onPostExecute(pdfFile);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                mainHandler.post(() -> {
+                    if (callback != null) callback.onPostExecute(null);
+                });
             }
-        } else
-            Toast.makeText(context, "Some error occurred.", Toast.LENGTH_SHORT).show();
+        });
     }
 
-    int getCount() {
+    private int getCount() {
         int count = sharedPreferences.getInt("pdfCount", 1);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("pdfCount", count + 1);
-        editor.commit();
+        editor.apply();
 
         return count;
     }
-
 }

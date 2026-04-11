@@ -1,11 +1,12 @@
 package in.ashprog.assignmentwriter;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -13,12 +14,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
-
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static in.ashprog.assignmentwriter.AppPermission.createFolder;
 import static in.ashprog.assignmentwriter.AppPermission.getPermission;
@@ -29,26 +28,29 @@ public class PdfConverterActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     Button createButton;
     CheckBox selectAllCB;
+    ProgressBar progressBar;
+    TextView progressText;
 
     ArrayList<File> imagesList;
     ImagesListAdapter imagesListAdapter;
     ArrayList<File> checkedImages;
 
-    private InterstitialAd mInterstitialAd;
-
     boolean permissionDialogShown = false;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     void initializeList() throws Exception {
-        createFolder();
+        createFolder(this);
 
-        File imageFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/Images");
+        File baseDir = getExternalFilesDir(null);
+        if (baseDir == null) return;
+        File imageFolder = new File(baseDir, "Writer/Images");
         final File[] images = imageFolder.listFiles();
 
         imagesList.clear();
         checkedImages.clear();
         imagesListAdapter.clearCheckedList();
 
-        AsyncTask.execute(new Runnable() {
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
                 if (images != null) {
@@ -80,6 +82,8 @@ public class PdfConverterActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         createButton = findViewById(R.id.createButton);
         selectAllCB = findViewById(R.id.selectAllCB);
+        progressBar = findViewById(R.id.progressBar);
+        progressText = findViewById(R.id.progressText);
 
         imagesList = new ArrayList<>();
         checkedImages = new ArrayList<>();
@@ -102,18 +106,6 @@ public class PdfConverterActivity extends AppCompatActivity {
                 if (((CheckBox) v).isChecked()) imagesListAdapter.selectAll();
                 else imagesListAdapter.unSelectAll();
             }
-        });
-
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-4317741765568310/2812740643");
-        mInterstitialAd.loadAd(new AdRequest.Builder().build());
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                // Load the next interstitial.
-                mInterstitialAd.loadAd(new AdRequest.Builder().build());
-            }
-
         });
     }
 
@@ -144,7 +136,7 @@ public class PdfConverterActivity extends AppCompatActivity {
     public void createPdf(View view) {
         if (hasPermission(this)) {
             try {
-                createFolder();
+                createFolder(this);
 
                 checkedImages.clear();
 
@@ -152,9 +144,37 @@ public class PdfConverterActivity extends AppCompatActivity {
                     checkedImages.add(imagesList.get(imagesListAdapter.getCheckedPositions().get(i)));
                 }
 
-                if (checkedImages.size() > 0)
-                    new CreatePdfFileTask(this, checkedImages, mInterstitialAd).execute();
-                else
+                if (checkedImages.size() > 0) {
+                    new CreatePdfFileTask(this, checkedImages, new CreatePdfFileTask.Callback() {
+                        @Override
+                        public void onPreExecute() {
+                            createButton.setEnabled(false);
+                            progressBar.setVisibility(View.VISIBLE);
+                            progressText.setVisibility(View.VISIBLE);
+                            progressBar.setMax(checkedImages.size());
+                            progressBar.setProgress(0);
+                            progressText.setText("Creating pdf...");
+                        }
+
+                        @Override
+                        public void onProgressUpdate(int progress, int total) {
+                            progressBar.setProgress(progress);
+                            progressText.setText("Processing images (" + progress + "/" + total + ")");
+                        }
+
+                        @Override
+                        public void onPostExecute(File file) {
+                            createButton.setEnabled(true);
+                            progressBar.setVisibility(View.GONE);
+                            progressText.setVisibility(View.GONE);
+                            if (file != null) {
+                                Toast.makeText(PdfConverterActivity.this, "Pdf file saved at " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(PdfConverterActivity.this, "Some error occurred.", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }).execute();
+                } else
                     Toast.makeText(this, "Nothing selected.", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 e.printStackTrace();

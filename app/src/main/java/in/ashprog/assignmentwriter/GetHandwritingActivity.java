@@ -15,8 +15,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -33,18 +31,12 @@ public class GetHandwritingActivity extends AppCompatActivity {
     public static final String WRITER_EMAIL = "assignment.writer@aol.com";
     public static final String CALLIGRAPHR_URL = "https://www.calligraphr.com/en/docs/tutorial1/";
 
-    private AdView mAdView;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_handwriting);
 
         ((TextView) findViewById(R.id.emailTV)).setText(WRITER_EMAIL);
-
-        mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
     }
 
     @Override
@@ -53,7 +45,7 @@ public class GetHandwritingActivity extends AppCompatActivity {
 
         if (requestCode == 102 && hasPermission(this)) {
             try {
-                createFolder();
+                createFolder(this);
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -64,13 +56,15 @@ public class GetHandwritingActivity extends AppCompatActivity {
     public void downloadTemplate(View view) {
         if (hasPermission(this)) {
             try {
-                createFolder();
+                createFolder(this);
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
-            File templateFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Writer/template.pdf");
+            File baseDir = getExternalFilesDir(null);
+            if (baseDir == null) return;
+            File templateFile = new File(baseDir, "Writer/template.pdf");
             try {
                 AssetManager assetManager = getAssets();
 

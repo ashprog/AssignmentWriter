@@ -10,5 +10,10 @@
 .DS_Store
 /build
 /captures
+*.jks
+*.keystore
+*Certificate
+*.pem
+keystore.properties
 .externalNativeBuild
 .cxx

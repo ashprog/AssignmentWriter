@@ -1,5 +1,6 @@
 package in.ashprog.assignmentwriter;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,8 +27,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static in.ashprog.assignmentwriter.AppPermission.createFolder;
-import static in.ashprog.assignmentwriter.AppPermission.getPermission;
-import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 
 public class PdfConverterActivity extends AppCompatActivity {
 
@@ -54,6 +53,7 @@ public class PdfConverterActivity extends AppCompatActivity {
             }
     );
 
+    @SuppressLint("NotifyDataSetChanged")
     void initializeList() throws Exception {
         createFolder(this);
 
@@ -98,9 +98,9 @@ public class PdfConverterActivity extends AppCompatActivity {
         checkedImages = new ArrayList<>();
 
         imagesListAdapter = new ImagesListAdapter(this, imagesList);
-        imagesListAdapter.setSelectAllCBStateChangeListener(() -> {
-            selectAllCB.setChecked(imagesListAdapter.getCheckedPositions().size() == imagesList.size());
-        });
+        imagesListAdapter.setSelectAllCBStateChangeListener(() ->
+            selectAllCB.setChecked(imagesListAdapter.getCheckedPositions().size() == imagesList.size())
+        );
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(imagesListAdapter);
 
@@ -108,22 +108,22 @@ public class PdfConverterActivity extends AppCompatActivity {
             if (((CheckBox) v).isChecked()) imagesListAdapter.selectAll();
             else imagesListAdapter.unSelectAll();
         });
+
+        findViewById(R.id.pickImagesButton).setOnClickListener(this::pickImages);
+        createButton.setOnClickListener(this::createPdf);
+        findViewById(R.id.backIV3).setOnClickListener(this::back);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (hasPermission(this)) {
-            try {
-                initializeList();
-            } catch (Exception e) {
-                Log.e(TAG, "Error initializing list", e);
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+        try {
+            initializeList();
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing list", e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-        else if (!permissionDialogShown)
-            getPermission(this);
     }
 
     @Override
@@ -143,19 +143,22 @@ public class PdfConverterActivity extends AppCompatActivity {
         progressText.setVisibility(View.VISIBLE);
         progressBar.setMax(uris.size());
         progressBar.setProgress(0);
-        progressText.setText("Copying images...");
+        progressText.setText(R.string.copying_images);
 
         executorService.execute(() -> {
             File baseDir = getExternalFilesDir(null);
             if (baseDir == null) return;
             File imageFolder = new File(baseDir, "Writer/Images");
-            if (!imageFolder.exists()) imageFolder.mkdirs();
+            if (!imageFolder.exists()) {
+                if (!imageFolder.mkdirs()) Log.e(TAG, "Failed to create images folder");
+            }
 
             for (int i = 0; i < uris.size(); i++) {
                 Uri uri = uris.get(i);
                 File destFile = new File(imageFolder, "picked_image_" + System.currentTimeMillis() + "_" + i + ".png");
                 try (InputStream in = getContentResolver().openInputStream(uri);
                      FileOutputStream out = new FileOutputStream(destFile)) {
+                    if (in == null) continue;
                     byte[] buffer = new byte[1024];
                     int read;
                     while ((read = in.read(buffer)) != -1) {
@@ -213,9 +216,9 @@ public class PdfConverterActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 progressText.setVisibility(View.GONE);
                 if (success) {
-                    Toast.makeText(PdfConverterActivity.this, "Pdf file saved successfully.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PdfConverterActivity.this, R.string.pdf_saved, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(PdfConverterActivity.this, "Some error occurred.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PdfConverterActivity.this, R.string.error_occurred, Toast.LENGTH_SHORT).show();
                 }
             }
         }).execute();
@@ -232,7 +235,7 @@ public class PdfConverterActivity extends AppCompatActivity {
             if (!checkedImages.isEmpty()) {
                 createPdfLauncher.launch("Assignment_" + System.currentTimeMillis() + ".pdf");
             } else
-                Toast.makeText(this, "Nothing selected.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.nothing_selected, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e(TAG, "Error creating PDF", e);
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();

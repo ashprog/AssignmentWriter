@@ -13,8 +13,8 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/back"
         android:onClick="back"
         android:scaleType="centerInside"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,13 +26,11 @@
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:fontFamily="@font/anonymous_pro"
         android:gravity="center_vertical"
-        android:text="Get Handwriting"
+        android:text="@string/get_handwriting"
         android:textColor="#FFFFFF"
         android:textSize="30sp"
         android:textStyle="bold"
@@ -45,11 +43,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="Follow the simple steps to create your handwriting."
+        android:text="@string/follow_steps_desc"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -78,9 +74,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -90,7 +84,7 @@
                     android:id="@+id/textView9"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1) Download the template from "
+                    android:text="@string/step_1"
                     android:textColor="#FFFFFF" />
 
                 <TextView
@@ -98,7 +92,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="downloadTemplate"
-                    android:text="here."
+                    android:text="@string/here"
                     android:textColor="@color/colorAccent"
                     android:textStyle="bold|italic" />
 
@@ -109,10 +103,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -122,7 +114,7 @@
                     android:id="@+id/textView13"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2) Print this template and fill it. Try to fill it with free hand for adding some realistic look. You can also add some cutout letters in place of 'special characters'."
+                    android:text="@string/step_2"
                     android:textColor="#FFFFFF" />
             </LinearLayout>
 
@@ -131,10 +123,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -144,7 +134,7 @@
                     android:id="@+id/textView14"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3) Scan this template and send it to the below email address. After some time, you'll receive an email which will contain your font (otf) file."
+                    android:text="@string/step_3"
                     android:textColor="#FFFFFF" />
 
                 <TextView
@@ -153,7 +143,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:onClick="copyEmail"
-                    android:text="WRITER_EMAIL"
+                    android:text="@string/writer_email"
                     android:textColor="@color/colorAccent"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -164,10 +154,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -177,7 +165,7 @@
                     android:id="@+id/textView16"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4) Alternatively, instead of sending it to us, you can also create your otf file from Calligraphr. After building font, download 'otf' file only."
+                    android:text="@string/step_4"
                     android:textColor="#FFFFFF" />
 
                 <TextView
@@ -186,7 +174,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:onClick="openCalligraphr"
-                    android:text="Open Calligraphr Tutorial"
+                    android:text="@string/open_calligraphr_tutorial"
                     android:textColor="@color/colorAccent"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -197,10 +185,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -210,7 +196,7 @@
                     android:id="@+id/textView18"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="5) After obtaining your font (otf) file. Move it to Writer/Font folder with name as 'myWriting.otf'."
+                    android:text="@string/step_5"
                     android:textColor="#FFFFFF" />
             </LinearLayout>
 
@@ -219,10 +205,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -232,7 +216,7 @@
                     android:id="@+id/textView19"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="6) That's it. You're good to go."
+                    android:text="@string/step_6"
                     android:textColor="#FFFFFF" />
             </LinearLayout>
 
@@ -241,10 +225,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -254,7 +236,7 @@
                     android:id="@+id/textView20"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tip: While creating your font at Calligraphr, set Letter Spacing to 10% for adding realistic look."
+                    android:text="@string/tip_calligraphr"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -263,10 +245,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -276,7 +256,7 @@
                     android:id="@+id/textView23"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Font Setting:"
+                    android:text="@string/font_setting"
                     android:textColor="#FFFFFF" />
 
                 <ImageView
@@ -284,6 +264,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="500dp"
                     android:layout_gravity="center_horizontal"
+                    android:contentDescription="@string/font_setting"
                     android:scaleType="fitCenter"
                     app:srcCompat="@drawable/example_image_2" />
 
@@ -291,13 +272,14 @@
                     android:id="@+id/textView22"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Fill template like this:"
+                    android:text="@string/fill_template_like_this"
                     android:textColor="#FFFFFF" />
 
                 <ImageView
                     android:id="@+id/imageView"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
+                    android:contentDescription="@string/fill_template_like_this"
                     android:scaleType="fitCenter"
                     app:srcCompat="@drawable/example_image_1" />
             </LinearLayout>

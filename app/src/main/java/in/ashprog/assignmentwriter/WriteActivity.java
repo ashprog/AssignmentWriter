@@ -1,5 +1,6 @@
 package in.ashprog.assignmentwriter;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -8,7 +9,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
@@ -31,15 +31,12 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static in.ashprog.assignmentwriter.App.sharedPreferences;
 import static in.ashprog.assignmentwriter.AppPermission.createFolder;
-import static in.ashprog.assignmentwriter.AppPermission.getPermission;
-import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 
 public class WriteActivity extends AppCompatActivity implements TextWatcher, View.OnTouchListener {
 
@@ -112,6 +109,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,15 +136,11 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     protected void onResume() {
         super.onResume();
 
-        if (hasPermission(this)) {
-            try {
-                initializeFormat();
-            } catch (Exception e) {
-                Log.e(TAG, "Error initializing format", e);
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        } else if (!permissionDialogShown) {
-            getPermission(this);
+        try {
+            initializeFormat();
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing format", e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -161,7 +155,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
     public void downloadPage(View view) {
         if (previewLayout.getWidth() <= 0 || previewLayout.getHeight() <= 0) {
-            Toast.makeText(this, "Preview not ready yet", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.preview_not_ready, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -178,12 +172,12 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
             try (OutputStream out = getContentResolver().openOutputStream(uri)) {
                 if (out != null) {
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                    Toast.makeText(this, "Page saved successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.page_saved, Toast.LENGTH_SHORT).show();
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error saving page to Uri", e);
-            Toast.makeText(this, "Error saving: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.error_saving, e.getMessage()), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -206,7 +200,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
     public void clearAll(View view) {
         editText.setText("");
-        Snackbar.make(view, "Input cleared.", BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(view, R.string.input_cleared, BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     void setPreviewLayout() {
@@ -247,6 +241,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
             v.getParent().requestDisallowInterceptTouchEvent(true);
             if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
                 v.getParent().requestDisallowInterceptTouchEvent(false);
+                v.performClick();
             }
         }
         return false;

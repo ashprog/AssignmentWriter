@@ -13,13 +13,11 @@
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:fontFamily="@font/anonymous_pro"
         android:gravity="center_vertical"
-        android:text="Settings"
+        android:text="@string/settings"
         android:textColor="#FFFFFF"
         android:textSize="30sp"
         android:textStyle="bold"
@@ -32,8 +30,8 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/back"
         android:onClick="back"
         android:scaleType="centerInside"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,10 +57,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:text='For changing the font, move your otf file to Writer/Font folder with name as "myWriting.otf".'
+                android:text="@string/font_change_desc"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -74,9 +70,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -87,7 +81,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
-                    android:text="Font Size:"
+                    android:text="@string/font_size"
                     android:textColor="@color/colorAccent"
                     android:textSize="14sp" />
 
@@ -95,11 +89,12 @@
                     android:id="@+id/fontSizeET"
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
+                    android:autofillHints="none"
                     android:ems="10"
                     android:inputType="numberDecimal"
-                    android:text="24"
+                    android:text="@string/default_font_size"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp" />
 
@@ -108,7 +103,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
-                    android:text="Line Spacing :"
+                    android:text="@string/line_spacing"
                     android:textColor="@color/colorAccent"
                     android:textSize="14sp" />
 
@@ -116,11 +111,12 @@
                     android:id="@+id/lineSpaceET"
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
+                    android:autofillHints="none"
                     android:ems="10"
                     android:inputType="numberSigned|numberDecimal"
-                    android:text="-5"
+                    android:text="@string/default_line_spacing"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -130,9 +126,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -143,7 +137,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
-                    android:text="Font Color:"
+                    android:text="@string/font_color"
                     android:textColor="@color/colorAccent"
                     android:textSize="14sp" />
 
@@ -152,19 +146,20 @@
                     android:id="@+id/colorRG"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/button_bg_2"
                     android:orientation="horizontal"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp">
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    tools:ignore="RtlSymmetry">
 
                     <RadioButton
                         android:id="@+id/blueRB"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Blue"
+                        android:text="@string/blue"
                         android:textColor="#414A82"
                         android:textSize="14sp" />
 
@@ -173,7 +168,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Black"
+                        android:text="@string/black"
                         android:textColor="@color/colorPrimary"
                         android:textSize="14sp" />
                 </RadioGroup>
@@ -185,11 +180,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:text='For using your custom page background, copy your background image to Writer/Background folder with name as "page_bg.png".'
+                android:text="@string/custom_bg_desc"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -201,10 +194,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -214,7 +205,7 @@
                     android:id="@+id/textView11"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Choose Background:"
+                    android:text="@string/choose_background"
                     android:textColor="@color/colorAccent"
                     android:textSize="14sp" />
 
@@ -223,23 +214,27 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
+                    android:baselineAligned="false"
                     android:orientation="horizontal"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp">
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    tools:ignore="RtlSymmetry">
 
                     <ImageView
                         android:id="@+id/imageView2"
-                        android:layout_width="200dp"
+                        android:layout_width="0dp"
                         android:layout_height="200dp"
                         android:layout_weight="1"
+                        android:contentDescription="@string/plain_page"
                         android:scaleType="fitStart"
                         app:srcCompat="@drawable/page_bg_1" />
 
                     <ImageView
                         android:id="@+id/imageView3"
-                        android:layout_width="200dp"
+                        android:layout_width="0dp"
                         android:layout_height="200dp"
                         android:layout_weight="1"
+                        android:contentDescription="@string/lined_page"
                         android:scaleType="fitStart"
                         app:srcCompat="@drawable/page_bg_2" />
                 </LinearLayout>
@@ -256,14 +251,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Plain Page" />
+                        android:text="@string/plain_page" />
 
                     <RadioButton
                         android:id="@+id/linedPageRB"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Lined Page" />
+                        android:text="@string/lined_page" />
                 </RadioGroup>
 
             </LinearLayout>
@@ -273,13 +268,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:background="@drawable/button_bg"
                 android:onClick="save"
-                android:text="SAVE"
+                android:text="@string/save"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -292,25 +285,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
-                android:layout_marginRight="16dp"
-                android:text="versionCode"
                 android:textColor="#FFFFFF"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/saveButton" />
+                app:layout_constraintTop_toBottomOf="@+id/saveButton"
+                tools:text="Version : 1.0" />
 
             <LinearLayout
                 android:id="@+id/linearLayout13"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -321,7 +310,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
-                    android:text="Choose Font:"
+                    android:text="@string/choose_font"
                     android:textColor="@color/colorAccent"
                     android:textSize="14sp" />
 
@@ -329,24 +318,25 @@
                     android:id="@+id/fontRG"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/button_bg_2"
                     android:orientation="horizontal"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp">
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    tools:ignore="RtlSymmetry">
 
                     <RadioButton
                         android:id="@+id/ashprogRB"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Type 1" />
+                        android:text="@string/type_1" />
 
                     <RadioButton
                         android:id="@+id/vinayRB"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Type 2" />
+                        android:text="@string/type_2" />
                 </RadioGroup>
 
                 <TextView
@@ -354,7 +344,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Demo Text"
+                    android:text="@string/demo_text"
                     android:textColor="#FFFFFF"
                     android:textSize="24sp" />
             </LinearLayout>

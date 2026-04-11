@@ -1,5 +1,6 @@
 package in.ashprog.assignmentwriter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -55,7 +56,7 @@ class ImagesListAdapter extends RecyclerView.Adapter<ImagesListAdapter.ImagesLis
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final ImagesListViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final ImagesListViewHolder holder, int position) {
         holder.pageIV.setImageBitmap(BitmapFactory.decodeFile(imagesList.get(position).getAbsolutePath()));
         holder.imageNameTV.setText(imagesList.get(position).getName());
 
@@ -65,10 +66,13 @@ class ImagesListAdapter extends RecyclerView.Adapter<ImagesListAdapter.ImagesLis
         holder.checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (((CheckBox) v).isChecked()) checkedPositions.add(position);
-                else checkedPositions.remove(new Integer(position));
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    if (((CheckBox) v).isChecked()) checkedPositions.add(adapterPosition);
+                    else checkedPositions.remove(Integer.valueOf(adapterPosition));
 
-                selectAllCBStateChanger.changeSelectAllCBState();
+                    selectAllCBStateChanger.changeSelectAllCBState();
+                }
             }
         });
     }
@@ -82,6 +86,7 @@ class ImagesListAdapter extends RecyclerView.Adapter<ImagesListAdapter.ImagesLis
         checkedPositions.clear();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void selectAll() {
         clearCheckedList();
         for (int i = 0; i < imagesList.size(); i++) {
@@ -90,6 +95,7 @@ class ImagesListAdapter extends RecyclerView.Adapter<ImagesListAdapter.ImagesLis
         notifyDataSetChanged();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void unSelectAll() {
         clearCheckedList();
         notifyDataSetChanged();

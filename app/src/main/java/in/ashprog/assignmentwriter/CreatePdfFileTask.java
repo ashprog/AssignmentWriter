@@ -1,9 +1,6 @@
 package in.ashprog.assignmentwriter;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,8 +16,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static in.ashprog.assignmentwriter.App.sharedPreferences;
 
 class CreatePdfFileTask {
 
@@ -86,14 +81,5 @@ class CreatePdfFileTask {
                 });
             }
         });
-    }
-
-    private int getCount() {
-        int count = sharedPreferences.getInt("pdfCount", 1);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("pdfCount", count + 1);
-        editor.apply();
-
-        return count;
     }
 }

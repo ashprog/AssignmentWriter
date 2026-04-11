@@ -8,6 +8,7 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,11 +24,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import static in.ashprog.assignmentwriter.AppPermission.createFolder;
-import static in.ashprog.assignmentwriter.AppPermission.getPermission;
-import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 
 public class GetHandwritingActivity extends AppCompatActivity {
 
+    private static final String TAG = "GetHandwritingActivity";
     public static final String WRITER_EMAIL = "assignment.writer@aol.com";
     public static final String CALLIGRAPHR_URL = "https://www.calligraphr.com/en/docs/tutorial1/";
 
@@ -43,62 +43,52 @@ public class GetHandwritingActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == 102 && hasPermission(this)) {
+        if (requestCode == 102) {
             try {
                 createFolder(this);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error creating folder", e);
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     public void downloadTemplate(View view) {
-        if (hasPermission(this)) {
-            try {
-                createFolder(this);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        try {
+            createFolder(this);
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating folder", e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+        File baseDir = getExternalFilesDir(null);
+        if (baseDir == null) return;
+        File writerDir = new File(baseDir, "Writer");
+        if (!writerDir.exists() && !writerDir.mkdirs()) return;
+        File templateFile = new File(writerDir, "template.pdf");
+        try (InputStream fis = getAssets().open("template.pdf");
+             FileOutputStream fos = new FileOutputStream(templateFile)) {
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = fis.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
             }
 
-            File baseDir = getExternalFilesDir(null);
-            if (baseDir == null) return;
-            File templateFile = new File(baseDir, "Writer/template.pdf");
-            try {
-                AssetManager assetManager = getAssets();
-
-                FileOutputStream fos = new FileOutputStream(templateFile);
-                InputStream fis = assetManager.open("template.pdf");
-
-                openFileOutput(templateFile.getName(), Context.MODE_PRIVATE);
-
-                byte[] buffer = new byte[1024];
-                int read;
-                while ((read = fis.read(buffer)) != -1) {
-                    fos.write(buffer, 0, read);
-                }
-
-                fis.close();
-                fos.close();
-
-                Snackbar.make(view, "Template downloaded at " + templateFile.getPath(), BaseTransientBottomBar.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            }
-
-        } else {
-            getPermission(this);
+            Snackbar.make(view, getString(R.string.template_downloaded, templateFile.getPath()), BaseTransientBottomBar.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e(TAG, "Error downloading template", e);
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
     public void copyEmail(View view) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Writer. Email", WRITER_EMAIL);
-        clipboard.setPrimaryClip(clip);
-
-        Toast.makeText(this, "Email copied to clipboard.", Toast.LENGTH_SHORT).show();
+        if (clipboard != null) {
+            ClipData clip = ClipData.newPlainText("Writer. Email", WRITER_EMAIL);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, R.string.email_copied, Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void openCalligraphr(View view) {

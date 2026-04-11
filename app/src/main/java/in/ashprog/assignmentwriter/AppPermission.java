@@ -1,21 +1,17 @@
 package in.ashprog.assignmentwriter;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import java.io.File;
 
 class AppPermission {
+    @SuppressWarnings("unused")
     static boolean hasPermission(Context context) {
         return true;
     }
 
-    static void getPermission(Activity activity) {
+    @SuppressWarnings("unused")
+    static void getPermission(android.app.Activity activity) {
     }
 
     static void createFolder(Context context) throws Exception {

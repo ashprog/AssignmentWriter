@@ -7,6 +7,7 @@ import androidx.core.content.res.ResourcesCompat;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -18,10 +19,10 @@ import com.google.android.material.snackbar.Snackbar;
 
 import static in.ashprog.assignmentwriter.App.sharedPreferences;
 import static in.ashprog.assignmentwriter.AppPermission.createFolder;
-import static in.ashprog.assignmentwriter.AppPermission.getPermission;
-import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 
 public class SettingsActivity extends AppCompatActivity {
+
+    private static final String TAG = "SettingsActivity";
 
     RadioGroup colorRG, pageRG, fontRG;
     TextView demoTV, versionTV, textView4, textView10;
@@ -92,14 +93,12 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (hasPermission(this)) {
-            try {
-                createFolder(this);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        } else if (!permissionDialogShown) getPermission(this);
+        try {
+            createFolder(this);
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating folder", e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -140,7 +139,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     void showVersion() {
-        versionTV.setText(String.format("Version : %d.0", BuildConfig.VERSION_CODE));
+        versionTV.setText(getString(R.string.version_format, BuildConfig.VERSION_CODE));
     }
 
     public void save(View view) {
@@ -173,9 +172,9 @@ public class SettingsActivity extends AppCompatActivity {
             editor.putInt("font", 1);
         }
 
-        editor.commit();
+        editor.apply();
 
-        Snackbar.make(view, "Format Saved !", BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(view, R.string.format_saved, BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     public void back(View view) {

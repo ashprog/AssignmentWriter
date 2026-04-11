@@ -6,12 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -19,6 +21,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -28,6 +32,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,11 +43,21 @@ import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 
 public class WriteActivity extends AppCompatActivity implements TextWatcher, View.OnTouchListener {
 
+    private static final String TAG = "WriteActivity";
     EditText editText;
     TextView previewTV;
     RelativeLayout previewLayout;
 
     boolean permissionDialogShown = false;
+
+    private final ActivityResultLauncher<String> createDocumentLauncher = registerForActivityResult(
+            new ActivityResultContracts.CreateDocument("image/png"),
+            uri -> {
+                if (uri != null) {
+                    saveBitmapToUri(uri);
+                }
+            }
+    );
 
     void initialize() {
         editText = findViewById(R.id.editText);
@@ -109,9 +124,14 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
         setPreviewLayout();
 
-        editText.setHint("Use <Q> </Q> tag for adding question text.\nFor eg. <Q> Your text </Q>");
-        previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>"), Html.FROM_HTML_MODE_COMPACT),
-                TextView.BufferType.SPANNABLE);
+        editText.setHint(R.string.enter_text);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>"), Html.FROM_HTML_MODE_COMPACT),
+                    TextView.BufferType.SPANNABLE);
+        } else {
+            previewTV.setText(Html.fromHtml(formatText("\nUse \"Q\" tag for adding question text.\n\nFor eg. <Q> Your text </Q>")),
+                    TextView.BufferType.SPANNABLE);
+        }
     }
 
     @Override
@@ -122,7 +142,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
             try {
                 initializeFormat();
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error initializing format", e);
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         } else if (!permissionDialogShown) {
@@ -140,34 +160,30 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
     }
 
     public void downloadPage(View view) {
-        if (hasPermission(this)) {
-            try {
-                createFolder(this);
+        if (previewLayout.getWidth() <= 0 || previewLayout.getHeight() <= 0) {
+            Toast.makeText(this, "Preview not ready yet", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                File baseDir = getExternalFilesDir(null);
-                if (baseDir == null) return;
-                if (previewLayout.getWidth() <= 0 || previewLayout.getHeight() <= 0) {
-                    Toast.makeText(this, "Preview not ready yet", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+        String fileName = "page" + getCount() + ".png";
+        createDocumentLauncher.launch(fileName);
+    }
 
-                Bitmap bitmap = Bitmap.createBitmap(previewLayout.getWidth(), previewLayout.getHeight(), Bitmap.Config.ARGB_8888);
-                android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
-                previewLayout.draw(canvas);
-                File pageFile = new File(baseDir, "Writer/Images/page" + getCount() + ".png");
-                try (FileOutputStream out = new FileOutputStream(pageFile)) {
+    private void saveBitmapToUri(Uri uri) {
+        try {
+            Bitmap bitmap = Bitmap.createBitmap(previewLayout.getWidth(), previewLayout.getHeight(), Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+            previewLayout.draw(canvas);
+
+            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                if (out != null) {
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                    Toast.makeText(this, "Page saved at " + pageFile.getPath(), Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, "Error saving: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Page saved successfully", Toast.LENGTH_SHORT).show();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-        } else {
-            getPermission(this);
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving page to Uri", e);
+            Toast.makeText(this, "Error saving: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -213,7 +229,11 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
 
         text = formatText(text);
 
-        previewTV.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT), TextView.BufferType.SPANNABLE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            previewTV.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT), TextView.BufferType.SPANNABLE);
+        } else {
+            previewTV.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+        }
     }
 
     @Override
@@ -236,7 +256,7 @@ public class WriteActivity extends AppCompatActivity implements TextWatcher, Vie
         int count = sharedPreferences.getInt("imagesCount", 1);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("imagesCount", count + 1);
-        editor.commit();
+        editor.apply();
 
         return count;
     }

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 import android.content.SharedPreferences;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -23,7 +24,7 @@ import static in.ashprog.assignmentwriter.AppPermission.hasPermission;
 public class SettingsActivity extends AppCompatActivity {
 
     RadioGroup colorRG, pageRG, fontRG;
-    TextView demoTV, versionTV;
+    TextView demoTV, versionTV, textView4, textView10;
     EditText fontSizeET, lineSpaceET;
 
     boolean permissionDialogShown = false;
@@ -36,6 +37,11 @@ public class SettingsActivity extends AppCompatActivity {
         lineSpaceET = findViewById(R.id.lineSpaceET);
         versionTV = findViewById(R.id.versionTV);
         demoTV = findViewById(R.id.demoTV);
+        textView4 = findViewById(R.id.textView4);
+        textView10 = findViewById(R.id.textView10);
+
+        textView4.setPaintFlags(textView4.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        textView10.setPaintFlags(textView10.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
     void fetchFormat() {

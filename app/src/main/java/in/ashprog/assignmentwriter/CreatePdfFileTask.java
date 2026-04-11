@@ -2,9 +2,12 @@ package in.ashprog.assignmentwriter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.widget.Toast;
+import android.util.Log;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Image;
@@ -12,7 +15,7 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,22 +24,25 @@ import static in.ashprog.assignmentwriter.App.sharedPreferences;
 
 class CreatePdfFileTask {
 
+    private static final String TAG = "CreatePdfFileTask";
     private final Context context;
     private final ArrayList<File> imagesList;
+    private final Uri outputUri;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public interface Callback {
         void onPreExecute();
         void onProgressUpdate(int progress, int total);
-        void onPostExecute(File file);
+        void onPostExecute(boolean success);
     }
 
     private final Callback callback;
 
-    public CreatePdfFileTask(Context context, ArrayList<File> imagesList, Callback callback) {
+    public CreatePdfFileTask(Context context, ArrayList<File> imagesList, Uri outputUri, Callback callback) {
         this.context = context;
         this.imagesList = imagesList;
+        this.outputUri = outputUri;
         this.callback = callback;
     }
 
@@ -44,19 +50,9 @@ class CreatePdfFileTask {
         if (callback != null) callback.onPreExecute();
 
         executorService.execute(() -> {
-            File baseDir = context.getExternalFilesDir(null);
-            if (baseDir == null) {
-                mainHandler.post(() -> {
-                    if (callback != null) callback.onPostExecute(null);
-                });
-                return;
-            }
-
-            File pdfFile = new File(baseDir, "Writer/Pdf/pdfFile (" + getCount() + ") .pdf");
-
             Document document = new Document(PageSize.A4, 0f, 0f, 0f, 0f);
-            try {
-                PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+            try (OutputStream out = context.getContentResolver().openOutputStream(outputUri)) {
+                PdfWriter.getInstance(document, out);
                 document.open();
 
                 for (int i = 0; i < imagesList.size(); i++) {
@@ -66,8 +62,8 @@ class CreatePdfFileTask {
                             - document.rightMargin()) / image.getWidth()) * 100;
                     image.scalePercent(scaler);
                     image.setAlignment(Image.ALIGN_CENTER | Image.ALIGN_TOP);
-                    image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 1.0f,
-                            (document.getPageSize().getHeight() - image.getScaledHeight()) / 1.0f);
+                    image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()),
+                            (document.getPageSize().getHeight() - image.getScaledHeight()));
 
                     document.add(image);
                     document.newPage();
@@ -81,12 +77,12 @@ class CreatePdfFileTask {
                 document.close();
 
                 mainHandler.post(() -> {
-                    if (callback != null) callback.onPostExecute(pdfFile);
+                    if (callback != null) callback.onPostExecute(true);
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error creating PDF", e);
                 mainHandler.post(() -> {
-                    if (callback != null) callback.onPostExecute(null);
+                    if (callback != null) callback.onPostExecute(false);
                 });
             }
         });

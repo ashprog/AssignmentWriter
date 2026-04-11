@@ -38,6 +38,7 @@ Assignment Writer is an Android application designed to convert digital text int
 
 ## Technical Details
 
+- **Current Version:** 1.0 (Build 22)
 - **Minimum SDK:** 21 (Android 5.0 Lollipop)
 - **Target SDK:** 35 (Android 15)
 - **Key Libraries:** 

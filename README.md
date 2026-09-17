@@ -1,6 +1,10 @@
 # Assignment Writer
 
+[![Google Play](https://img.shields.io/badge/Google%20Play-300K%2B%20Downloads-brightgreen?logo=google-play)](https://play.google.com/store/apps/details?id=in.ashprog.assignmentwriter&hl=en_IN)
+
 Assignment Writer is an Android application designed to convert digital text into a natural-looking handwritten format. It's perfect for students or anyone who needs to submit "handwritten" assignments while typing them out.
+
+**📲 Get it on Google Play:** [Assignment Writer](https://play.google.com/store/apps/details?id=in.ashprog.assignmentwriter&hl=en_IN) — **300,000+ downloads**
 
 ## Features
 
